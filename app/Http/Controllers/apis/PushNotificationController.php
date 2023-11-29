@@ -26,7 +26,7 @@ class PushNotificationController extends Controller
 
         $data = [
             "token"     => $request->token,
-            "user_id"   => (@$request->user_id)?$request->user_id:$user->id_user,
+            "user_id"   => (@$request->user_id)?$request->user_id:null,
             "status"    => "active"
         ];
 
@@ -38,10 +38,9 @@ class PushNotificationController extends Controller
             );
 
             return response()->json($error, 200);
-            exit();
         }
 
-        $create = FirebaseToken::updateOrCreate($data,["user_id" => (@$request->user_id)?$request->user_id:$user->id_user]);
+        $create = FirebaseToken::updateOrCreate($data);
         if($create){
             $response = array(
                 "status"    => "success",
@@ -53,6 +52,19 @@ class PushNotificationController extends Controller
                 "message"   => "Failed to create request" 
             );
         }
+
+				// Subscribe token to topic 'all'
+				$headers = array
+				('Authorization: key=' . "AAAAcR2UlMg:APA91bF6E_WErBKXH5P_qakSaJwRtk6dHw58t9IcaHBynkA2GsaVRsOm-NjBhojdIeKjf98joQ-YVFZqLhyFnEuoypvKKRLgAGIxKdMJvKoeDZIAFAsJyTdhCYlFC8lHhBiP9EfU13oS",
+				  'Content-Type: application/json');
+				$ch = curl_init();
+				$token = $request->token;
+				curl_setopt($ch, CURLOPT_URL, "https://iid.googleapis.com/iid/v1/$token/rel/topics/all");
+				curl_setopt($ch, CURLOPT_POST, true);
+				curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, array());
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_exec($ch);
 
         return response()->json($response, 200);
         exit();

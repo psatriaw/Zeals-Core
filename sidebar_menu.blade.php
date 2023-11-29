@@ -320,6 +320,8 @@
             </li>
             <?php } ?>
 
+
+
             <?php if($previlege->isAllow($login->id_user,$login->id_department,"master-pengaturan")){?>
             <li <?=(Request::segment(1)=="master" && Request::segment(2)=="pengaturan")?"class='active'":""?>>
                 <a href="{{ url('master/pengaturan') }}"><i class="fa fa-cogs"></i> <span class="nav-label">System Configuration</span></a>

@@ -416,6 +416,8 @@ Route::post("get-address-coordinate", "LocationController@searchaddress");
 Route::get("admin/user", "UserController@index");
 Route::get('admin/user/create', "UserController@create");
 Route::get('admin/user/profile/{id}', "UserController@profile");
+
+
 Route::post('admin/user/store', "UserController@store");
 Route::get('admin/user/edit/{id}', "UserController@edit");
 Route::post('admin/user/update/{id}', "UserController@update");
@@ -427,6 +429,10 @@ Route::post('admin/user/updatemanage/{id}', "UserController@updatemanage");
 Route::post('admin/user/activate_group', "UserController@activateallaccount");
 // Table 'zeals.tb_voucher' doesn't exist
 
+
+// push notif
+Route::get('admin/push-notification', "FcmNotificationController@create");
+Route::post('/submit-fcm', 'FcmNotificationController@store');
 
 //module master user
 
@@ -627,3 +633,5 @@ Route::get("push-broaadcast","BroadcasterController@push");
 //paling bawah
 Route::get("{any}", "HomeController@notfound");
 Route::get("{permalink}/{any}", "HomeController@notfound");
+
+

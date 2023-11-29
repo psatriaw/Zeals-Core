@@ -14,6 +14,7 @@ class CampaignService {
     public function get($type=""){
         $keyword    = $this->request->keyword;
         $today      = date("Y-m-d");
+        $user        = auth('sanctum')->user();
 
         $data = Campaign::with('program')->whereNull("campaign_internal")
 			->where(function ($query) use ($today) {
@@ -29,9 +30,15 @@ class CampaignService {
 					$query->orWhere("campaign_description", "like", "%".$keyword."%");
 				}
 			})
-			->select('tb_penerbit.nama_penerbit', 'tb_campaign.*')
-			->leftJoin('tb_penerbit', 'tb_penerbit.id_penerbit', '=', 'tb_campaign.id_penerbit');
-
+			->select(
+                'tb_penerbit.nama_penerbit',
+                'tb_campaign.*',
+                DB::raw('CASE WHEN tb_campaign_bookmark.id_campaign IS NOT NULL THEN 1 ELSE 0 END AS is_bookmarked')
+            )
+			->leftJoin('tb_penerbit', 'tb_penerbit.id_penerbit', '=', 'tb_campaign.id_penerbit')
+            ->leftJoin(DB::raw("(SELECT id_campaign FROM tb_campaign_bookmark WHERE id_user = " . $user->id_user . ") AS tb_campaign_bookmark"), function ($join) {
+                $join->on('tb_campaign_bookmark.id_campaign', '=', 'tb_campaign.id_campaign');
+            });
         if($type){
             switch($type){
                 case 'hot':

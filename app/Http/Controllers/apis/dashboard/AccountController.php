@@ -22,25 +22,96 @@ class AccountController extends Controller
         $limit      = $request->perPage;
         $skip       = ($request->currentPage-1)*$limit;
         $keyword    = $request->keyword;
+        $order_by   = ($request->order_by)?$request->order_by:"date_created";
+        $order_type = ($request->order_type)?$request->order_type:"desc";
+        $start_date = $request->start_date;
+        $end_date   = $request->end_date;
 
-        $subjects   = (new User())->with('department')->withCount('total_campaign','total_reach','total_visit','total_interest','total_action','total_sales');
+        // $special_fields = ['total_campaign','total_reach','total_visit','total_interest','total_action','total_sales'];
+        // if(in_array($order_by,$special_fields)){
+        //     $special_fields = [$order_by];
+        //     $order_by = $order_by."_count";
+        // }
 
-        $data       = $subjects->orwhere(function($query) use ($keyword){
-                            $query->where("first_name",'LIKE', "%{$keyword}%");
-                            $query->orwhere("last_name",'LIKE', "%{$keyword}%");
-                            $query->orwhere("email",'LIKE', "%{$keyword}%");
-                            $query->orwhere("phone",'LIKE', "%{$keyword}%");
-                        })
-                        ->orWhereHas('department', function($query) use ($keyword){
-                            $query->where("name",'LIKE',"%{$keyword}%");
-                        });
-        $total      = $data->count();
+        // $subjects   = (new User())->with('department')->withCount($special_fields);
 
-        $data       = $data->skip($skip)->orderBy("date_created","DESC")->limit($limit)->get();
+        // $data       = $subjects->orwhere(function($query) use ($keyword){
+        //                     $query->where("first_name",'LIKE', "%{$keyword}%");
+        //                     $query->orwhere("last_name",'LIKE', "%{$keyword}%");
+        //                     $query->orwhere("email",'LIKE', "%{$keyword}%");
+        //                     $query->orwhere("phone",'LIKE', "%{$keyword}%");
+        //                 })
+        //                 ->orWhereHas('department', function($query) use ($keyword){
+        //                     $query->where("name",'LIKE',"%{$keyword}%");
+        //                 });
+                        
+        // $total      = $data->count();
+
+        // $data       = $data->skip($skip)->orderBy($order_by,$order_type)->limit($limit)->get();
+        $table  = "tb_user";
+
+        $data = User::where(function ($query) use ($keyword) {
+            if ($keyword != "") {
+                $query->where("first_name", "like", "%" . $keyword . "%");
+                $query->orwhere("last_name", "like", "%" . $keyword . "%");
+                $query->orwhere("email", "like", "%" . $keyword . "%");
+                $query->orwhere("username", "like", "%" . $keyword . "%");
+                $query->orwhere("phone", "like", "%" . $keyword . "%");
+                $query->orwhere("address", "like", "%" . $keyword . "%");
+                $query->orWhereHas("department",function($query) use ($keyword){
+                    $query->where("name",'LIKE',"%{$keyword}%");
+                });
+            }
+        })
+        ->wherein($table . ".status", array("active", "inactive"))
+        ->select($table . ".*","total_reach","total_visit","total_action","total_read","total_acquisition","total_created","total_redemption","total_campaign","total_downline")
+        ->with('department');
+
+        if($start_date!=""){
+            $start_date = strtotime($start_date." 00:00:00");
+		    $end_date 	= strtotime($end_date." 23:59:59");
+
+            $data = $data->leftjoin(DB::raw("(SELECT COUNT(*) as total_campaign, id_user as idu FROM tb_campaign_unique_link GROUP BY id_user)thej"),"thej.idu","=",$table.".id_user")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_downline, referral_code FROM tb_user WHERE status = 'active' GROUP BY referral_code)reff"),"reff.referral_code","=",$table.".activation_code")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_reach,id_user as idu FROM tb_campaign_tracker WHERE last_update BETWEEN $start_date AND $end_date AND type_conversion = 'initial'  GROUP BY id_user)init"),"init.idu","=",$table.".id_user")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_visit,id_user as idu FROM tb_campaign_tracker WHERE last_update BETWEEN $start_date AND $end_date AND type_conversion = 'visit'  GROUP BY id_user)init2"),"init2.idu","=",$table.".id_user")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_read,id_user as idu FROM tb_campaign_tracker WHERE last_update BETWEEN $start_date AND $end_date AND type_conversion = 'read'  GROUP BY id_user)init3"),"init3.idu","=",$table.".id_user")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_action,id_user as idu FROM tb_campaign_tracker WHERE last_update BETWEEN $start_date AND $end_date AND type_conversion = 'action'  GROUP BY id_user)init4"),"init4.idu","=",$table.".id_user")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_acquisition,id_user as idu FROM tb_campaign_tracker WHERE last_update BETWEEN $start_date AND $end_date AND type_conversion = 'acquisition'  GROUP BY id_user)init5"),"init5.idu","=",$table.".id_user")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_created,id_user as idu FROM tb_campaign_tracker, tb_voucher WHERE tb_campaign_tracker.id_tracker = tb_voucher.id_tracker  GROUP BY id_user)init7"),"init7.idu","=",$table.".id_user")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_redemption,id_user as idu FROM tb_campaign_tracker, tb_voucher WHERE tb_campaign_tracker.id_tracker = tb_voucher.id_tracker AND tb_voucher.status = 'used'  GROUP BY id_user)init6"),"init6.idu","=",$table.".id_user");
+        }else{
+
+            $data = $data->leftjoin(DB::raw("(SELECT COUNT(*) as total_campaign, id_user as idu FROM tb_campaign_unique_link GROUP BY id_user)thej"),"thej.idu","=",$table.".id_user")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_downline, referral_code FROM tb_user WHERE status = 'active' GROUP BY referral_code)reff"),"reff.referral_code","=",$table.".activation_code")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_reach,id_user as idu FROM tb_campaign_tracker WHERE  type_conversion = 'initial'  GROUP BY id_user)init"),"init.idu","=",$table.".id_user")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_visit,id_user as idu FROM tb_campaign_tracker WHERE  type_conversion = 'visit'  GROUP BY id_user)init2"),"init2.idu","=",$table.".id_user")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_read,id_user as idu FROM tb_campaign_tracker WHERE  type_conversion = 'read'  GROUP BY id_user)init3"),"init3.idu","=",$table.".id_user")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_action,id_user as idu FROM tb_campaign_tracker WHERE  type_conversion = 'action'  GROUP BY id_user)init4"),"init4.idu","=",$table.".id_user")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_acquisition,id_user as idu FROM tb_campaign_tracker WHERE  type_conversion = 'acquisition'  GROUP BY id_user)init5"),"init5.idu","=",$table.".id_user")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_created,id_user as idu FROM tb_campaign_tracker, tb_voucher WHERE tb_campaign_tracker.id_tracker = tb_voucher.id_tracker  GROUP BY id_user)init7"),"init7.idu","=",$table.".id_user")
+                        ->leftjoin(DB::raw("(SELECT COUNT(*) as total_redemption,id_user as idu FROM tb_campaign_tracker, tb_voucher WHERE tb_campaign_tracker.id_tracker = tb_voucher.id_tracker AND tb_voucher.status = 'used'  GROUP BY id_user)init6"),"init6.idu","=",$table.".id_user");
+        }
+
+        $total = $data->count();
+
+        $data = $data->orderBy($order_by, $order_type)
+                ->skip($skip)
+                ->limit($limit);
+
+        // if($id_department!=""){
+        //   $data = $data->where($table.".id_department",$id_department);
+        // }
+
+        $data = $data->get();
 
         if($data){
             $return = [
                 "status"    => "success",
+                "form"      => [
+                    "order_by"     => $order_by,
+                    "order_type"   => $order_type
+                ],
                 "data"      => $data,
                 "total"     => $total,
                 "base_path" => url('')

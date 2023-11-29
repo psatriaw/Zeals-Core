@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
-use App\Models\{User, Wilayah, Department, Setting};
+use App\Models\{User, Wilayah, Department, Job, Setting};
 
 use App\Http\Models\SettingModel;
 
@@ -28,7 +28,9 @@ class UserController extends Controller
         $response = array(
             "status"    => "success",
             "data"      => User::where("id_user",$user->id_user)->with('saldo')->first(),
-            "wilayah"   => Wilayah::orderBy("namaprov","ASC")->orderBy("namakab","ASC")->get()
+            "wilayah"   => Wilayah::orderBy("namaprov","ASC")->orderBy("namakab","ASC")->get(),
+            "occupation"   => Job::get()
+
         );
       }else{
         $response = array(
@@ -73,7 +75,8 @@ class UserController extends Controller
             "nomor_rekening"       => $request->nomor_rekening,
             "gender"        => $request->gender,
             "dob"           => $request->dob,
-            "id_wilayah"    => $request->id_wilayah
+            "id_wilayah"    => $request->id_wilayah,
+            "id_job"    => $request->id_job
         ];
 
         if($request->new_password){

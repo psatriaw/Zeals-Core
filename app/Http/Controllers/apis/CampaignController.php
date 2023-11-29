@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Auth;
 use Validator;
-use App\Models\{Campaign, CampaignUniqueLink};
+use App\Models\{Campaign, CampaignUniqueLink, CampaignBookmark};
 use Illuminate\Support\Facades\DB;
 
 use Session;
@@ -22,7 +22,8 @@ class CampaignController extends Controller
     public function list(Request $request){
         $keyword    = $request->keyword;
         $today      = date("Y-m-d");
-
+        $user        = auth('sanctum')->user();
+        
         $data = Campaign::with('program')->whereNull("campaign_internal")
 			->whereNotIn("campaign_type",["saham","surat hutang"])
 			->where(function ($query) use ($today) {
@@ -38,8 +39,15 @@ class CampaignController extends Controller
 					$query->orWhere("campaign_description", "like", "%".$keyword."%");
 				}
 			})
-			->select('tb_penerbit.nama_penerbit', 'tb_campaign.*')
-			->leftJoin('tb_penerbit', 'tb_penerbit.id_penerbit', '=', 'tb_campaign.id_penerbit');
+			->select(
+                'tb_penerbit.nama_penerbit',
+                'tb_campaign.*',
+                DB::raw('CASE WHEN tb_campaign_bookmark.id_campaign IS NOT NULL THEN 1 ELSE 0 END AS is_bookmarked')
+            )
+			->leftJoin('tb_penerbit', 'tb_penerbit.id_penerbit', '=', 'tb_campaign.id_penerbit')
+            ->leftJoin(DB::raw("(SELECT id_campaign FROM tb_campaign_bookmark WHERE id_user = " . $user->id_user . ") AS tb_campaign_bookmark"), function ($join) {
+                $join->on('tb_campaign_bookmark.id_campaign', '=', 'tb_campaign.id_campaign');
+            });
 
         if($request->id_category!=""){
             $data = $data->join(DB::raw("(SELECT id_campaign FROM tb_campaign_property WHERE property_type='category' AND value='".$request->id_category."' AND tb_campaign_property.status = 'active' GROUP BY id_campaign)cat"),"cat.id_campaign","=","tb_campaign.id_campaign");
@@ -88,6 +96,12 @@ class CampaignController extends Controller
         }else{
             $id_user  = 0;
             $data 		= $data->leftjoin(DB::raw("(SELECT unique_link as joined, id_campaign as idc FROM tb_campaign_unique_link WHERE id_user = '$request->id_user')ul"),"ul.idc","=","tb_campaign.id_campaign");
+        }
+
+        // bookmark 
+        if($request->filter=="bookmark"){
+            $id_user 	= $user->id_user;
+            $data 		= $data->join(DB::raw("(SELECT id_campaign as idc FROM tb_campaign_bookmark WHERE id_user = '$id_user')bookmark"),"bookmark.idc","=","tb_campaign.id_campaign");
         }
 
         if($request->limit!=0){
@@ -175,6 +189,61 @@ class CampaignController extends Controller
             );
         }
 
+        return response()->json($return, 200);
+    }
+
+    public function bookmark(Request $request){
+        $user        = auth('sanctum')->user();
+        $id_campaign = $request->id_campaign;
+
+        $data   = [
+            "time_created"  => time(),
+            "last_update"   => time(),
+            "id_user"       => $user->id_user,
+            "id_campaign"   => $id_campaign,
+        ];
+
+        $bookmark = CampaignBookmark::updateOrCreate($data,[
+            "id_user"       => $user->id_user,
+            "id_campaign"   => $id_campaign,
+        ]);
+
+        if($bookmark){
+            $return = array(
+                "status"    => "success",
+                "messages"  => "Campaign Bookmark!",
+            );
+        }else{
+            $return = array(
+                "status"    => "error",
+                "messages"  => "Failed to bookmark the campaign",
+            );
+        }
+
+        return response()->json($return, 200);
+    }
+
+    public function removebookmark(Request $request){
+        $user        = auth('sanctum')->user();
+        $id_campaign = $request->id_campaign;
+
+        $bookmark = CampaignBookmark::where('id_user', $user->id_user)
+            ->where('id_campaign', $id_campaign)
+            ->first();
+        if ($bookmark) {
+            $bookmark->delete();
+    
+            $return = [
+                "status" => "success",
+                "messages" => "Campaign Has been removed",
+            ];
+        } else {
+            $return = [
+                "status" => "error",
+                "messages" => "Campaign Undefined",
+            ];
+        }
+    
         return response()->json($return, 200);
     }
 }

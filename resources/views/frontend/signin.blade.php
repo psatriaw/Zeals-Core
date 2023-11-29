@@ -80,7 +80,7 @@
   </div>
 </main>
 <script>
-    document.location = "https://play.google.com/store/apps/details?id=asia.zeals.mobile.pwa";
+    //document.location = "https://play.google.com/store/apps/details?id=asia.zeals.mobile.pwa";
 
     $("#loginForm").submit(function(e){
       e.preventDefault();
