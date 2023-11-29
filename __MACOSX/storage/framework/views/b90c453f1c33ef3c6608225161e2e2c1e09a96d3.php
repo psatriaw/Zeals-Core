@@ -1,0 +1,1 @@
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/myzeals/resources/views/backend/menus/user_menu.blade.php ENDPATH**/ ?>

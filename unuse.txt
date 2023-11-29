@@ -1,0 +1,89 @@
+Unused Controller (DASHBOARD):
+
+1. BrandController
+2. CommentController
+3. DiscountController
+4. DistribusiController
+5. LikeController
+6. OrderController
+7. PageController
+8. PekerjaanController
+9. ReportController
+10. ServiceController
+11. ShopController
+12. SlideController
+13. StripeController
+14. TempUserController
+15. TrackingController
+16. UploaderController
+17. WillayahController
+18. WishlistController
+
+
+Unused Controller (API):
+
+1. AuthController
+2. BlasterController
+
+Unused Model / Missing Table:
+
+1. VideoModel
+2. VoucherModel
+3. WithdrawalModel
+4. PageModel
+5. TicketModel
+6. DemographModel (missing tb_job table)
+7. AccountApplicationModel
+8. AccountModel
+9 AddressModel
+10. BahanPengeteraModel
+11. CardModel
+12. CartDetailModel
+13. CategoryModel
+14. CommentModel
+15. DiscountModel
+16. FundraisingFundsModel
+17. FundraisingModel
+18. JobModel
+19. KelurahanModel
+20. JurnalModel
+21. KYC_Pribadi_Model
+22. LikeModel
+22. MaterialDistributionModel
+23. MicrositeComponentModel
+24. MicrositesModel
+25. MutasiModel
+26. NotificationModel
+27. PackingModel
+28. PaymentCallbackModel
+29. PekerjaanModel
+30. PerkawinanModel
+31. PhotoModel
+32. PostModel
+33. ProductDetailModel
+34. ProductionCompletionModel
+35. ProductionModel
+36. ProductionOutletItemModel
+37. ProductionOutletModel
+38. ProductModel
+39. ProductOnProductModel
+40. ProductRejectModel
+41. ProductRestrictionModel
+42. ProductTagModel
+43. PurchaseDetailModel
+44. PurchaseModel
+45. QRModel
+46. RekeningDanaModel
+47. ServiceModel
+48. ShippingAddressModel
+49. ShopModel
+50. SlideModel
+51. TicketCommentModel
+52. TickerModel
+53. TopupModel
+54. TransactionModel
+55. UserFitMeModel
+56. WishlistModel
+57. WithdrawalModel
+58. XenditLogModel
+59. XenditPayoutModel

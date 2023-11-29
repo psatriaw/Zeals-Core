@@ -1,0 +1,123 @@
+.no-padding{
+  padding: 0px;
+}
+.namecard{
+  height: 340px;
+  background: #fff;
+  margin-top: 25px;
+  border-radius: 12px;
+  background-image: url(name_card_template.png);
+  background-size: cover;
+  box-shadow: 0px 0px 12px 1px #aaa;
+}
+
+.name{
+  position: absolute;
+  top: 174px;
+  font-size: 20px;
+  font-weight: 700;
+  left: 40px;
+  color: #2f317b;
+  font-family: sans-serif;
+}
+
+.job-desk{
+  position: absolute;
+  top: 203px;
+  left: 40px;
+  font-size: 16px;
+  color: #333;
+  font-family: sans-serif;
+}
+
+.email{
+  font-family: sans-serif;
+  position: absolute;
+  top: 276px;
+  left: 40px;
+  font-size: 14px;
+  color: #2f317c;
+}
+
+.phone{
+  font-family: sans-serif;
+  position: absolute;
+  top: 298px;
+  left: 40px;
+  font-size: 14px;
+  color: #2f317c;
+}
+
+.address{
+  font-family: sans-serif;
+  position: absolute;
+  top: 318px;
+  left: 40px;
+  font-size: 14px;
+  color: #2f317c;
+}
+.fa{
+  width: 20px;
+}
+
+.btn-yellow{
+  background: #FFA81D;
+  border-radius: 8px;
+  border-color: #FFA81D;
+  font-weight: 800;
+  outline: none;
+  box-shadow: none;
+  font-size: 14px;
+  font-family: 'nunito',sans-serif;
+  height: 40px;
+  line-height: 1.9;
+  color: #fff;
+}
+.qr{
+  position: absolute;
+  right: 35px;
+  bottom: -40px;
+  box-shadow: 0px 0px 5px 0px #333;
+  border-radius: 9px;
+}
+.qr img{
+  width: 124px;
+}
+
+@media (max-width:480px){
+  .namecard{
+    height: 517px;
+    background: #fff;
+    margin-top: 25px;
+    border-radius: 12px;
+    background-image: url(name_card_potrait.png);
+    background-size: 100%;
+    background-repeat: no-repeat;
+    border: 1px solid #d6d6d6;
+  }
+
+  .name{
+    top:384px;
+  }
+
+  .job-desk{
+    top: 413px;
+  }
+
+  .email{
+    top: 456px;
+  }
+
+  .phone{
+    top: 478px;
+  }
+
+  .address{
+    top: 498px;
+  }
+  .qr{
+    position: absolute;
+    right: 20px;
+    bottom: 177px;
+  }
+}

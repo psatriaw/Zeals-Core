@@ -1,0 +1,7 @@
+Example (Tests\Unit\Example)
+ [x] Basic test
+
+Example (Tests\Feature\Example)
+ [ ] Reg link
+ [ ] Master q r
+
